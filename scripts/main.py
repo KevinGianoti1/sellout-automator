@@ -1,31 +1,40 @@
 import pandas as pd
 from pathlib import Path
 
-# Caminhos
+# 📁 Caminhos
 input_path = Path("data/input")
 output_path = Path("data/output")
 output_path.mkdir(exist_ok=True)
 
-# Lê o primeiro arquivo Excel encontrado
+# 📥 Localiza o primeiro arquivo .xlsx
 arquivo = next(input_path.glob("*.xlsx"), None)
 if not arquivo:
-    raise FileNotFoundError("Nenhum arquivo Excel encontrado na pasta input.")
+    raise FileNotFoundError("Nenhum arquivo Excel encontrado em data/input")
 
+print(f"🔍 Lendo arquivo: {arquivo.name}")
 df = pd.read_excel(arquivo)
 
-# Filtros básicos (ajuste os nomes conforme o seu Excel)
-df = df[
-    (~df['Categoria'].str.contains('Bonificação|Troca', case=False, na=False)) &
-    (~df['Tabela Preço'].str.contains('CUSTO ENTRE EMPRESAS', case=False, na=False)) &
-    (~df['Status'].str.contains('Cancelado|Inadimplência', case=False, na=False))
-]
+# 🧮 Calcula o total e extrai o ano da data de emissão
+df["Total Calculado"] = df["Qtde"] * df["Valor Unit"]
+df["Ano"] = pd.to_datetime(df["Emissão"]).dt.year
 
-# Separar por representante
-for rep in df['Representante'].dropna().unique():
-    df_rep = df[df['Representante'] == rep]
-    caminho = output_path / f"Sell Out 2.0 - {rep}.xlsx"
-    df_rep.to_excel(caminho, index=False)
-    print(f"✅ Gerado: {caminho.name}")
+# 🧑‍🤝‍🧑 Separar por representante
+col_representante = "Repre"
+representantes = df[col_representante].dropna().unique()
 
-print("✨ Todos os relatórios foram gerados com sucesso!")
+for rep in representantes:
+    df_rep = df[df[col_representante] == rep]
+    
+    # Organiza colunas na ordem que queremos
+    colunas_finais = [
+        "Ano", "Emissão", "Notas", "Cliente", "Código", "Descrição",
+        "Qtde", "Valor Unit", "Total Calculado", "UF", "Empresa"
+    ]
+    df_saida = df_rep[colunas_finais].sort_values(by=["Ano", "Emissão"])
+    
+    # Salva o arquivo
+    nome_arquivo = f"Sell Out 2.0 - {rep}.xlsx"
+    df_saida.to_excel(output_path / nome_arquivo, index=False)
+    print(f"✅ Gerado: {nome_arquivo}")
 
+print("\n🎉 Relatórios por representante gerados com sucesso!")
