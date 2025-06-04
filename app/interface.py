@@ -8,9 +8,9 @@ from datetime import datetime
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scripts")))
 
 from sellout_generator import gerar_sellout, plotar_grafico_sellout, gerar_resumo_itens, salvar_relatorio_completo
+import streamlit_authenticator as stauth
 from auth import credentials
 from db import salvar_sellout, buscar_sellout, salvar_resumo, buscar_resumo
-import streamlit_authenticator as stauth
 
 st.set_page_config(page_title="Sell Out Automator", layout="wide")
 
