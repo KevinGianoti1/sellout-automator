@@ -17,16 +17,19 @@ st.set_page_config(page_title="Sell Out Automator", layout="wide")
 # LOGIN
 authenticator = stauth.Authenticate(
     credentials,
-    "sellout_app",
-    "authenticator",
+    "sellout_app",       # Nome do cookie
+    "authenticator_key", # Chave secreta
     cookie_expiry_days=1
 )
 
-name, auth_status, username = authenticator.login("Login", location="sidebar")
+authenticator.login()
 
-if auth_status:
+if authenticator.authentication_status:
+    name = authenticator.name
+    username = authenticator.username
     st.sidebar.success(f"Bem-vindo, {name} 👋")
     authenticator.logout("🔓 Logout", "sidebar")
+
     st.title("📊 Dashboard de Sell Out")
 
     # UPLOAD
@@ -49,7 +52,6 @@ if auth_status:
 
         salvar_sellout(name, df_sellout, df_resumo)
 
-
         st.success("✅ Dados processados e salvos com sucesso!")
 
         st.subheader("📅 Tabela de Sell Out")
@@ -70,7 +72,6 @@ if auth_status:
 
     # HISTÓRICO
     st.header("📂 Histórico de Sell Out")
-
     historico = buscar_sellout(name)
     resumos = buscar_resumo(name)
 
@@ -87,9 +88,11 @@ if auth_status:
 
         st.subheader("🧾 Resumo de Itens da Data Selecionada")
         st.dataframe(resumo_filtrado, use_container_width=True)
-
     else:
         st.info("Nenhum dado salvo ainda.")
 
-else:
+elif authenticator.authentication_status is False:
+    st.error("Usuário ou senha incorretos. Tente novamente.")
+
+elif authenticator.authentication_status is None:
     st.warning("Por favor, faça login para acessar o sistema.")
