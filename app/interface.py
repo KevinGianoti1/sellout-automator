@@ -22,7 +22,7 @@ authenticator = stauth.Authenticate(
     cookie_expiry_days=1
 )
 
-name, auth_status, username = authenticator.login(location="sidebar", fields={'Form name': 'Login'})
+name, auth_status, username = authenticator.login("Login", location="sidebar")
 
 if auth_status:
     st.sidebar.success(f"Bem-vindo, {name} 👋")
