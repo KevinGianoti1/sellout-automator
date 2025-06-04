@@ -2,4 +2,6 @@ pandas
 openpyxl
 streamlit
 plotly
+streamlit-authenticator
+
 
