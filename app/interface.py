@@ -84,10 +84,15 @@ else:
         st.dataframe(df_sellout.drop(columns=["Data Upload"]), use_container_width=True)
 
         st.subheader("📉 Gráfico de Vendas")
-        st.plotly_chart(plotar_grafico_sellout(df_sellout), use_container_width=True)
+        anos_disponiveis = sorted(df_sellout["Ano"].dropna().unique())
+        anos_selecionados = st.multiselect("Selecione o(s) ano(s) para o gráfico:", anos_disponiveis, default=anos_disponiveis)
+        df_filtrado = df_sellout[df_sellout["Ano"].isin(anos_selecionados)]
+        st.plotly_chart(plotar_grafico_sellout(df_filtrado), use_container_width=True)
 
-        st.subheader("🧾 Resumo de Itens")
-        st.dataframe(df_resumo.drop(columns=["Data Upload"]), use_container_width=True)
+        st.subheader("🧾 Resumo de Itens por Ano")
+        for ano in sorted(df_resumo["Ano"].unique()):
+            st.markdown(f"### 📆 Ano: {ano}")
+            st.dataframe(df_resumo[df_resumo["Ano"] == ano].drop(columns=["Data Upload"]), use_container_width=True)
 
         st.subheader("📅 Baixar Relatório")
         if st.button("📄 Gerar e Baixar Excel com Sell Out e Resumo"):
@@ -118,7 +123,9 @@ else:
         st.subheader("📅 Sell Out da Data Selecionada")
         st.dataframe(historico_filtrado, use_container_width=True)
 
-        st.subheader("🧾 Resumo de Itens da Data Selecionada")
-        st.dataframe(resumo_filtrado, use_container_width=True)
+        st.subheader("🧾 Resumo de Itens da Data Selecionada por Ano")
+        for ano in sorted(resumo_filtrado["Ano"].unique()):
+            st.markdown(f"### 📆 Ano: {ano}")
+            st.dataframe(resumo_filtrado[resumo_filtrado["Ano"] == ano], use_container_width=True)
     else:
         st.info("Nenhum dado salvo ainda.")
