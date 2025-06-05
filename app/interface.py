@@ -25,7 +25,7 @@ authenticator = stauth.Authenticate(
     cookie_expiry_days=1
 )
 
-name, authentication_status, username = authenticator.login("Login", "sidebar")
+name, authentication_status, username = authenticator.login("Login", location="sidebar")
 
 
 if authentication_status is False:
@@ -34,11 +34,26 @@ elif authentication_status is None:
     st.warning("Por favor, faça login para continuar.")
 else:
     st.sidebar.success(f"Bem-vindo, {name} 👋")
-    authenticator.logout("🔒 Logout", "sidebar")
+    authenticator.logout("🔒 Logout", location="sidebar")
 
 
     # UPLOAD
-@@ -56,46 +57,47 @@ else:
+    arquivo = st.file_uploader("📁 Envie seu arquivo de vendas (.xlsx)", type=["xlsx"])
+
+    if arquivo:
+        df = pd.read_excel(arquivo)
+        df.columns = df.columns.str.strip()
+        df["Emissão"] = pd.to_datetime(df["Emissão"], errors="coerce")
+        df["Ano"] = df["Emissão"].dt.year
+        df["Mês"] = df["Emissão"].dt.month
+        df["Representante"] = name
+
+        df_sellout = gerar_sellout(df)
+        df_resumo = gerar_resumo_itens(df)
+
+        data_upload = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        df_sellout["Data Upload"] = data_upload
+        df_resumo["Data Upload"] = data_upload
 
         salvar_sellout(name, df_sellout, df_resumo)
 
