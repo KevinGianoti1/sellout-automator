@@ -87,14 +87,36 @@ else:
         anos_disponiveis = sorted(df_sellout["Ano"].dropna().unique())
         anos_selecionados = st.multiselect("Selecione o(s) ano(s) para o gráfico:", anos_disponiveis, default=anos_disponiveis)
         df_filtrado = df_sellout[df_sellout["Ano"].isin(anos_selecionados)]
+        df_resumo_filtrado = df_resumo[df_resumo["Ano"].isin(anos_selecionados)]
+
         st.plotly_chart(plotar_grafico_sellout(df_filtrado), use_container_width=True)
 
-        st.subheader("🧾 Resumo de Itens por Ano")
-        for ano in sorted(df_resumo["Ano"].unique()):
-            st.markdown(f"### 📆 Ano: {ano}")
-            st.dataframe(df_resumo[df_resumo["Ano"] == ano].drop(columns=["Data Upload"]), use_container_width=True)
+        # RESUMO EXECUTIVO
+        st.subheader("📊 Resumo Executivo")
+        col1, col2 = st.columns(2)
+        col1.metric("Total de Itens Vendidos", f"{df_filtrado['Qtde_Total'].sum():,.0f}".replace(",", "."))
+        col2.metric("Valor Total Vendido (R$)", f"R$ {df_filtrado['Valor_Total'].sum():,.2f}".replace(",", "."))
 
-        st.subheader("📅 Baixar Relatório")
+        st.subheader("🏆 Top 10 Itens Vendidos")
+        top_itens = df_filtrado.groupby(["Código", "Descrição"]).agg({"Qtde_Total": "sum"}).reset_index().sort_values("Qtde_Total", ascending=False).head(10)
+        st.dataframe(top_itens, use_container_width=True)
+
+        st.subheader("📉 Itens Não Vendidos Este Ano")
+        codigos_ano_atual = df_filtrado["Código"].unique()
+        codigos_todos = df_resumo["Código"].unique()
+        codigos_nao_vendidos = sorted(set(codigos_todos) - set(codigos_ano_atual))
+        df_nao_vendidos = df_resumo[df_resumo["Código"].isin(codigos_nao_vendidos)]
+        if not df_nao_vendidos.empty:
+            st.dataframe(df_nao_vendidos.drop(columns=["Data Upload"]), use_container_width=True)
+        else:
+            st.info("Todos os itens foram vendidos no(s) ano(s) selecionado(s).")
+
+        st.subheader("🧾 Resumo de Itens por Ano")
+        for ano in sorted(df_resumo_filtrado["Ano"].unique()):
+            st.markdown(f"### 📆 Ano: {ano}")
+            st.dataframe(df_resumo_filtrado[df_resumo_filtrado["Ano"] == ano].drop(columns=["Data Upload"]), use_container_width=True)
+
+        st.subheader("📥 Baixar Relatório")
         if st.button("📄 Gerar e Baixar Excel com Sell Out e Resumo"):
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
                 salvar_relatorio_completo(df_sellout, df_resumo, tmp.name)
