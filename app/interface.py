@@ -80,27 +80,20 @@ else:
 
         st.success("✅ Dados processados e salvos com sucesso!")
 
-        # RESUMO EXECUTIVO
-        st.subheader("📌 Resumo Executivo")
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Total de Itens Vendidos", f"{df['Qtde'].sum():,.0f}".replace(",", "."))
-        col2.metric("Total Faturado", f"R$ {df['Total'].sum():,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-        col3.metric("Notas Fiscais", df["Notas"].nunique())
+        st.subheader("📅 Tabela de Sell Out")
+        st.dataframe(df_sellout.drop(columns=["Data Upload"]), use_container_width=True)
 
-        # GRÁFICO
         st.subheader("📉 Gráfico de Vendas")
         anos_disponiveis = sorted(df_sellout["Ano"].dropna().unique())
         anos_selecionados = st.multiselect("Selecione o(s) ano(s) para o gráfico:", anos_disponiveis, default=anos_disponiveis)
         df_filtrado = df_sellout[df_sellout["Ano"].isin(anos_selecionados)]
         st.plotly_chart(plotar_grafico_sellout(df_filtrado), use_container_width=True)
 
-        # RESUMO ITENS
         st.subheader("🧾 Resumo de Itens por Ano")
         for ano in sorted(df_resumo["Ano"].unique()):
             st.markdown(f"### 📆 Ano: {ano}")
             st.dataframe(df_resumo[df_resumo["Ano"] == ano].drop(columns=["Data Upload"]), use_container_width=True)
 
-        # BAIXAR
         st.subheader("📅 Baixar Relatório")
         if st.button("📄 Gerar e Baixar Excel com Sell Out e Resumo"):
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
