@@ -80,43 +80,36 @@ else:
 
         st.success("✅ Dados processados e salvos com sucesso!")
 
-        # --- RESUMO EXECUTIVO ---
-        st.header("📊 Resumo Executivo")
-        anos = sorted(df_sellout["Ano"].dropna().unique())
-        ano_sel = st.selectbox("Ano para análise executiva:", anos, index=len(anos)-1)
-        df_ano = df_sellout[df_sellout["Ano"] == ano_sel]
+        # 🎯 Resumo Executivo
+        st.subheader("📊 Resumo Executivo")
+        anos_disponiveis = sorted(df["Ano"].dropna().unique())
+        ano_selecionado = st.selectbox("Filtrar por ano:", anos_disponiveis, index=len(anos_disponiveis) - 1)
+        df_filtrado = df[df["Ano"] == ano_selecionado]
 
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Total de Itens Vendidos", f"{df_resumo[df_resumo['Ano'] == ano_sel]['Qtde_Total'].sum():,.0f}".replace(",", "."))
-        col2.metric("Total em Vendas", f"R$ {df_ano.drop(columns=['Cliente', 'Ano']).sum().sum():,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-        col3.metric("Clientes Atendidos", df_ano["Cliente"].nunique())
-        col4.metric("Itens Diferentes", df_resumo[df_resumo["Ano"] == ano_sel]["Código"].nunique())
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total de Itens Vendidos", f"{df_filtrado['Qtde'].sum():,.0f}".replace(",", "."))
+        col2.metric("Valor Total Vendido (R$)", f"R$ {df_filtrado['Total'].sum():,.2f}".replace(",", "v").replace(".", ",").replace("v", "."))
+        col3.metric("Número de Produtos Únicos", df_filtrado['Código'].nunique())
 
-        # --- GRÁFICO ---
-        st.subheader("📉 Gráfico de Vendas por Ano")
-        anos_grafico = st.multiselect("Filtrar por ano:", anos, default=anos)
-        df_grafico = df_sellout[df_sellout["Ano"].isin(anos_grafico)]
+        st.divider()
+
+        st.subheader("📅 Tabela de Sell Out")
+        st.dataframe(df_sellout.drop(columns=["Data Upload"]), use_container_width=True)
+
+        st.subheader("📉 Gráfico de Vendas")
+        anos_selecionados = st.multiselect("Selecione o(s) ano(s) para o gráfico:", anos_disponiveis, default=anos_disponiveis)
+        df_grafico = df_sellout[df_sellout["Ano"].isin(anos_selecionados)]
         st.plotly_chart(plotar_grafico_sellout(df_grafico), use_container_width=True)
 
-        # --- RESUMO ---
-        st.subheader("🧾 Resumo de Itens Vendidos")
-        anos_resumo = st.multiselect("Filtrar anos para resumo:", anos, default=anos)
-        codigos = df_resumo["Código"].unique()
-        clientes = df["Cliente"].unique()
-        cod_sel = st.multiselect("Filtrar por código:", codigos, default=codigos)
-        cli_sel = st.multiselect("Filtrar por cliente:", clientes, default=clientes)
-
-        df_res_filt = df_resumo[
-            (df_resumo["Ano"].isin(anos_resumo)) &
-            (df_resumo["Código"].isin(cod_sel)) &
-            (df["Cliente"].isin(cli_sel))
-        ]
-
-        for ano in sorted(df_res_filt["Ano"].unique()):
+        st.subheader("🧾 Resumo de Itens por Ano")
+        for ano in sorted(df_resumo["Ano"].unique()):
             st.markdown(f"### 📆 Ano: {ano}")
-            st.dataframe(df_res_filt[df_res_filt["Ano"] == ano].drop(columns=["Data Upload"]), use_container_width=True)
+            df_ano = df_resumo[df_resumo["Ano"] == ano].copy()
+            df_ano["Valor_Total"] = df_ano["Valor_Total"].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+            df_ano["Preço_Mínimo"] = df_ano["Preço_Mínimo"].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+            df_ano["Preço_Máximo"] = df_ano["Preço_Máximo"].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+            st.dataframe(df_ano.drop(columns=["Data Upload"]), use_container_width=True)
 
-        # --- DOWNLOAD ---
         st.subheader("📅 Baixar Relatório")
         if st.button("📄 Gerar e Baixar Excel com Sell Out e Resumo"):
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
@@ -130,7 +123,7 @@ else:
                     )
                 os.remove(tmp.name)
 
-    # --- HISTÓRICO ---
+    # HISTÓRICO
     st.header("📂 Histórico de Sell Out")
     historico = buscar_sellout(st.session_state.usuario)
     resumos = buscar_resumo(st.session_state.usuario)
