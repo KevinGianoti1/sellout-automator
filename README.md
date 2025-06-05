@@ -1,3 +1,4 @@
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
 diff --git a/README.md b/README.md
 index a5f4c679884326bf8d8a8e5725e3d5dffb037e1f..7b1457103839cbd132186b2e5150f6d043cdbb42 100644
 --- a/README.md
@@ -41,4 +42,6 @@ index a5f4c679884326bf8d8a8e5725e3d5dffb037e1f..7b1457103839cbd132186b2e5150f6d0
 +```bash
 +streamlit run app/interface.py
 +```
-
+ 
+EOF
+)
