@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 # Adiciona o diretório raiz (acima de 'app/') ao sys.path
-sys.path.append(str(Path(__file__).resolve().parent.parent))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Imports corrigidos para apontar para o pacote 'scripts'
 from scripts.sellout_generator import (
