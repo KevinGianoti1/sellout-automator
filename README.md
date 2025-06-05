@@ -29,19 +29,16 @@ index a5f4c679884326bf8d8a8e5725e3d5dffb037e1f..7b1457103839cbd132186b2e5150f6d0
  ```bash
  git clone https://github.com/KevinGianoti1/sellout-automator.git
  cd sellout-automator
-+```
-+
-+### 2. Instale as dependências
-+
-+```bash
-+pip install -r requirements.txt
-+```
-+
-+### 3. Execute a aplicação
-+
-+```bash
-+streamlit run app/interface.py
-+```
- 
-EOF
-)
+```
+
+### 2. Instale as dependências
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Execute a aplicação
+
+```bash
+streamlit run app/interface.py
+```
