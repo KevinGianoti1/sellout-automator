@@ -7,16 +7,19 @@ from datetime import datetime
 
 import sys
 from pathlib import Path
+
+# Adiciona o diretório raiz (acima de 'app/') ao sys.path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-from sellout.sellout_generator import (
+# Imports corrigidos para apontar para o pacote 'scripts'
+from scripts.sellout_generator import (
     gerar_sellout,
     plotar_grafico_sellout,
     gerar_resumo_itens,
     salvar_relatorio_completo,
 )
-from sellout.auth import credentials
-from sellout.db import salvar_sellout, buscar_sellout, buscar_resumo
+from scripts.auth import credentials
+from scripts.db import salvar_sellout, buscar_sellout, buscar_resumo
 
 
 st.set_page_config(page_title="Sell Out Automator", layout="wide")
@@ -31,7 +34,6 @@ authenticator = stauth.Authenticate(
 
 name, authentication_status, username = authenticator.login("Login", location="sidebar")
 
-
 if authentication_status is False:
     st.error("Usuário ou senha incorretos.")
 elif authentication_status is None:
@@ -39,7 +41,6 @@ elif authentication_status is None:
 else:
     st.sidebar.success(f"Bem-vindo, {name} 👋")
     authenticator.logout("🔒 Logout", location="sidebar")
-
 
     # UPLOAD
     arquivo = st.file_uploader("📁 Envie seu arquivo de vendas (.xlsx)", type=["xlsx"])
