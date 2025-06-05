@@ -2,16 +2,17 @@ import streamlit as st
 import streamlit_authenticator as stauth
 import pandas as pd
 import os
-import sys
 import tempfile
 from datetime import datetime
 
-# Adiciona a pasta de scripts ao path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scripts")))
-
-from sellout_generator import gerar_sellout, plotar_grafico_sellout, gerar_resumo_itens, salvar_relatorio_completo
-from auth import credentials
-from db import salvar_sellout, buscar_sellout, buscar_resumo
+from sellout.sellout_generator import (
+    gerar_sellout,
+    plotar_grafico_sellout,
+    gerar_resumo_itens,
+    salvar_relatorio_completo,
+)
+from sellout.auth import credentials
+from sellout.db import salvar_sellout, buscar_sellout, buscar_resumo
 
 
 st.set_page_config(page_title="Sell Out Automator", layout="wide")
@@ -37,22 +38,7 @@ else:
 
 
     # UPLOAD
-    arquivo = st.file_uploader("📁 Envie seu arquivo de vendas (.xlsx)", type=["xlsx"])
-
-    if arquivo:
-        df = pd.read_excel(arquivo)
-        df.columns = df.columns.str.strip()
-        df["Emissão"] = pd.to_datetime(df["Emissão"], errors="coerce")
-        df["Ano"] = df["Emissão"].dt.year
-        df["Mês"] = df["Emissão"].dt.month
-        df["Representante"] = name
-
-        df_sellout = gerar_sellout(df)
-        df_resumo = gerar_resumo_itens(df)
-
-        data_upload = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        df_sellout["Data Upload"] = data_upload
-        df_resumo["Data Upload"] = data_upload
+@@ -56,46 +57,47 @@ else:
 
         salvar_sellout(name, df_sellout, df_resumo)
 
@@ -78,6 +64,7 @@ else:
                         file_name=f"sellout_{username}.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
+                os.remove(tmp.name)
 
     # HISTÓRICO
     st.header("📂 Histórico de Sell Out")
