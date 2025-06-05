@@ -129,5 +129,3 @@ else:
             st.dataframe(resumo_filtrado[resumo_filtrado["Ano"] == ano], use_container_width=True)
     else:
         st.info("Nenhum dado salvo ainda.")
-
-o que está no github!
