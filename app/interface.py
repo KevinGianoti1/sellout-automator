@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit_authenticator as stauth
 import pandas as pd
 import os
 import tempfile
@@ -11,36 +10,53 @@ from pathlib import Path
 # Adiciona o diretório raiz (acima de 'app/') ao sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-# Imports corrigidos para apontar para o pacote 'scripts'
 from scripts.sellout_generator import (
     gerar_sellout,
     plotar_grafico_sellout,
     gerar_resumo_itens,
     salvar_relatorio_completo,
 )
-from scripts.auth import credentials
 from scripts.db import salvar_sellout, buscar_sellout, buscar_resumo
-
 
 st.set_page_config(page_title="Sell Out Automator", layout="wide")
 
-# LOGIN
-authenticator = stauth.Authenticate(
-    credentials,
-    "sellout_app",       # Nome do cookie
-    "authenticator_key", # Chave secreta
-    cookie_expiry_days=1
-)
+# ----- LOGIN SIMPLES -----
+USUARIOS = {
+    "agnes": "001",
+    "camila": "002",
+    "fernanda": "003",
+    "ana": "004",
+    "wellington": "005",
+    "bruno": "006",
+    "vinicius": "007",
+    "derec": "008",
+    "matheus": "009",
+}
 
-name, authentication_status, username = authenticator.login("Login", location="sidebar")
+if "logado" not in st.session_state:
+    st.session_state.logado = False
+    st.session_state.usuario = ""
 
-if authentication_status is False:
-    st.error("Usuário ou senha incorretos.")
-elif authentication_status is None:
-    st.warning("Por favor, faça login para continuar.")
+if not st.session_state.logado:
+    st.title("🔐 Login")
+
+    usuario = st.text_input("Usuário")
+    senha = st.text_input("Senha", type="password")
+
+    if st.button("Entrar"):
+        if usuario in USUARIOS and senha == USUARIOS[usuario]:
+            st.session_state.logado = True
+            st.session_state.usuario = usuario
+            st.success(f"Bem-vindo, {usuario} 👋")
+            st.rerun()
+        else:
+            st.error("Usuário ou senha incorretos.")
 else:
-    st.sidebar.success(f"Bem-vindo, {name} 👋")
-    authenticator.logout("🔒 Logout", location="sidebar")
+    st.sidebar.success(f"Logado como: {st.session_state.usuario} ✅")
+    if st.sidebar.button("Sair"):
+        st.session_state.logado = False
+        st.session_state.usuario = ""
+        st.rerun()
 
     # UPLOAD
     arquivo = st.file_uploader("📁 Envie seu arquivo de vendas (.xlsx)", type=["xlsx"])
@@ -51,7 +67,7 @@ else:
         df["Emissão"] = pd.to_datetime(df["Emissão"], errors="coerce")
         df["Ano"] = df["Emissão"].dt.year
         df["Mês"] = df["Emissão"].dt.month
-        df["Representante"] = name
+        df["Representante"] = st.session_state.usuario
 
         df_sellout = gerar_sellout(df)
         df_resumo = gerar_resumo_itens(df)
@@ -60,7 +76,7 @@ else:
         df_sellout["Data Upload"] = data_upload
         df_resumo["Data Upload"] = data_upload
 
-        salvar_sellout(name, df_sellout, df_resumo)
+        salvar_sellout(st.session_state.usuario, df_sellout, df_resumo)
 
         st.success("✅ Dados processados e salvos com sucesso!")
 
@@ -73,23 +89,23 @@ else:
         st.subheader("🧾 Resumo de Itens")
         st.dataframe(df_resumo.drop(columns=["Data Upload"]), use_container_width=True)
 
-        st.subheader("📥 Baixar Relatório")
-        if st.button("📤 Gerar e Baixar Excel com Sell Out e Resumo"):
+        st.subheader("📅 Baixar Relatório")
+        if st.button("📄 Gerar e Baixar Excel com Sell Out e Resumo"):
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
                 salvar_relatorio_completo(df_sellout, df_resumo, tmp.name)
                 with open(tmp.name, "rb") as f:
                     st.download_button(
                         "📄 Clique para Baixar",
                         f,
-                        file_name=f"sellout_{username}.xlsx",
+                        file_name=f"sellout_{st.session_state.usuario}.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
                 os.remove(tmp.name)
 
     # HISTÓRICO
     st.header("📂 Histórico de Sell Out")
-    historico = buscar_sellout(name)
-    resumos = buscar_resumo(name)
+    historico = buscar_sellout(st.session_state.usuario)
+    resumos = buscar_resumo(st.session_state.usuario)
 
     if not historico.empty:
         datas = historico["Data Upload"].dropna().unique()

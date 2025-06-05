@@ -1,9 +1,11 @@
 pandas>=2.0.0
 openpyxl>=3.1.2
-streamlit>=1.25.0
+streamlit>=1.25.0,<2.0.0
 plotly>=5.15.0
 streamlit-authenticator==0.4.2
-python-dotenv>=1.0.0  # Para leitura de variáveis (útil no futuro)
-watchdog>=3.0.0       # Recomendado pelo próprio Streamlit para recarregamento automático
+python-dotenv>=1.0.0
+watchdog>=3.0.0
 
-
+# Recomendado (mas opcional):
+bcrypt>=4.0.1        # Usado internamente pelo streamlit-authenticator
+PyYAML>=6.0.1        # Usado pelo streamlit-authenticator
