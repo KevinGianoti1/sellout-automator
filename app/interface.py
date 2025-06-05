@@ -24,9 +24,8 @@ authenticator = stauth.Authenticate(
     cookie_expiry_days=1
 )
 
-name, authentication_status, username = authenticator.login(
-location="sidebar", 
-fields={"Form name": "Login"}
+name, authentication_status, username = authenticator.login("Login", "sidebar")
+
 )
 
 if authentication_status is False:
