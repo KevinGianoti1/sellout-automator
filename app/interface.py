@@ -99,9 +99,3 @@ else:
         st.dataframe(resumo_filtrado, use_container_width=True)
     else:
         st.info("Nenhum dado salvo ainda.")
-
-elif authentication_status is False:
-    st.error("Usuário ou senha incorretos. Tente novamente.")
-
-elif authentication_status is None:
-    st.warning("Por favor, faça login para acessar o sistema.")
