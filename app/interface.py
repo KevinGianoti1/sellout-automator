@@ -5,6 +5,10 @@ import os
 import tempfile
 from datetime import datetime
 
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 from sellout.sellout_generator import (
     gerar_sellout,
     plotar_grafico_sellout,
