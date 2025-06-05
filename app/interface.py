@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit_authenticator as stauth
 import pandas as pd
 import os
 import sys
@@ -11,7 +12,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "s
 from sellout_generator import gerar_sellout, plotar_grafico_sellout, gerar_resumo_itens, salvar_relatorio_completo
 from auth import credentials
 from db import salvar_sellout, buscar_sellout, buscar_resumo
-import streamlit_authenticator as stauth
+
 
 st.set_page_config(page_title="Sell Out Automator", layout="wide")
 
@@ -23,12 +24,19 @@ authenticator = stauth.Authenticate(
     cookie_expiry_days=1
 )
 
-name, authentication_status, username = authenticator.login(location="sidebar", fields={"Form name": "Login"})
+name, authentication_status, username = authenticator.login(
+location="sidebar", 
+fields={"Form name": "Login"}
+)
 
-if authentication_status:
+if authentication_status is False:
+    st.error("Usuário ou senha incorretos.")
+elif authentication_status is None:
+    st.warning("Por favor, faça login para continuar.")
+else:
     st.sidebar.success(f"Bem-vindo, {name} 👋")
-    authenticator.logout("🔓 Logout", "sidebar")
-    st.title("📊 Dashboard de Sell Out")
+    authenticator.logout("🔒 Logout", "sidebar")
+
 
     # UPLOAD
     arquivo = st.file_uploader("📁 Envie seu arquivo de vendas (.xlsx)", type=["xlsx"])
