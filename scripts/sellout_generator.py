@@ -1,6 +1,7 @@
 import pandas as pd
 import plotly.express as px
 
+# 📊 Gera a Tabela Sell Out por Cliente, Ano e Mês
 def gerar_sellout(df):
     df["Ano"] = df["Emissão"].dt.year
     df["Mês"] = df["Emissão"].dt.month
@@ -25,9 +26,10 @@ def gerar_sellout(df):
 
     return pivot
 
-
+# 🧾 Gera Resumo de Itens Vendidos com Estatísticas por Ano
 def gerar_resumo_itens(df):
     df["Ano"] = df["Emissão"].dt.year
+
     resumo = df.groupby(["Ano", "Código", "Descrição"]).agg(
         Qtde_Total=("Qtde", "sum"),
         Valor_Total=("Total", "sum"),
@@ -35,19 +37,19 @@ def gerar_resumo_itens(df):
         Preço_Máximo=("Valor Unit", "max")
     ).reset_index()
 
-    resumo["Valor_Total"] = resumo["Valor_Total"].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-    resumo["Preço_Mínimo"] = resumo["Preço_Mínimo"].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-    resumo["Preço_Máximo"] = resumo["Preço_Máximo"].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    # 💰 Formatação dos valores em moeda
+    for col in ["Valor_Total", "Preço_Mínimo", "Preço_Máximo"]:
+        resumo[col] = resumo[col].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
 
     return resumo
 
-
+# 📁 Exporta relatório completo para Excel
 def salvar_relatorio_completo(sellout, resumo, caminho_arquivo):
     with pd.ExcelWriter(caminho_arquivo, engine="xlsxwriter") as writer:
         sellout.to_excel(writer, index=False, sheet_name="SellOut+Resumo", startrow=0)
         resumo.to_excel(writer, index=False, sheet_name="SellOut+Resumo", startrow=len(sellout) + 3)
 
-
+# 📈 Gera gráfico de barras com somatório geral de vendas por mês
 def plotar_grafico_sellout(df_sellout, ano=None):
     meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
              'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
@@ -59,7 +61,6 @@ def plotar_grafico_sellout(df_sellout, ano=None):
     df_totais = df_filtrado[meses].sum().reset_index()
     df_totais.columns = ["Mês", "Total"]
     df_totais["Total"] = pd.to_numeric(df_totais["Total"], errors="coerce").fillna(0.0)
-
     df_totais["Mês"] = pd.Categorical(df_totais["Mês"], categories=meses, ordered=True)
     df_totais = df_totais.sort_values("Mês")
 

@@ -5,12 +5,13 @@ import sys
 import tempfile
 from datetime import datetime
 
+# Adiciona a pasta de scripts ao path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "scripts")))
 
 from sellout_generator import gerar_sellout, plotar_grafico_sellout, gerar_resumo_itens, salvar_relatorio_completo
-import streamlit_authenticator as stauth
 from auth import credentials
-from db import salvar_sellout, buscar_sellout, salvar_resumo, buscar_resumo
+from db import salvar_sellout, buscar_sellout, buscar_resumo
+import streamlit_authenticator as stauth
 
 st.set_page_config(page_title="Sell Out Automator", layout="wide")
 
@@ -22,14 +23,11 @@ authenticator = stauth.Authenticate(
     cookie_expiry_days=1
 )
 
-authenticator.login()
+name, authentication_status, username = authenticator.login(location="sidebar", fields={"Form name": "Login"})
 
-if authenticator.authentication_status:
-    name = authenticator.name
-    username = authenticator.username
+if authentication_status:
     st.sidebar.success(f"Bem-vindo, {name} 👋")
     authenticator.logout("🔓 Logout", "sidebar")
-
     st.title("📊 Dashboard de Sell Out")
 
     # UPLOAD
@@ -68,7 +66,12 @@ if authenticator.authentication_status:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx") as tmp:
                 salvar_relatorio_completo(df_sellout, df_resumo, tmp.name)
                 with open(tmp.name, "rb") as f:
-                    st.download_button("📄 Clique para Baixar", f, file_name=f"sellout_{username}.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    st.download_button(
+                        "📄 Clique para Baixar",
+                        f,
+                        file_name=f"sellout_{username}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
 
     # HISTÓRICO
     st.header("📂 Histórico de Sell Out")
@@ -91,8 +94,8 @@ if authenticator.authentication_status:
     else:
         st.info("Nenhum dado salvo ainda.")
 
-elif authenticator.authentication_status is False:
+elif authentication_status is False:
     st.error("Usuário ou senha incorretos. Tente novamente.")
 
-elif authenticator.authentication_status is None:
+elif authentication_status is None:
     st.warning("Por favor, faça login para acessar o sistema.")
