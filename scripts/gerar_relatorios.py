@@ -1,7 +1,6 @@
 import pandas as pd
 import os
 from datetime import datetime
-from xlsxwriter.utility import xl_rowcol_to_cell
 
 def gerar_relatorios_por_cliente(df, pasta_destino):
     df.columns = df.columns.str.strip()  # Remove espaços em branco dos nomes de coluna
