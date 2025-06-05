@@ -37,10 +37,6 @@ def gerar_resumo_itens(df):
         Preço_Máximo=("Valor Unit", "max")
     ).reset_index()
 
-    # 💰 Formatação dos valores em moeda
-    for col in ["Valor_Total", "Preço_Mínimo", "Preço_Máximo"]:
-        resumo[col] = resumo[col].apply(lambda x: f"R$ {x:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-
     return resumo
 
 # 📁 Exporta relatório completo para Excel
