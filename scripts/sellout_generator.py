@@ -10,12 +10,12 @@ from pathlib import Path
 # Adiciona o diretório raiz (acima de 'app/') ao sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from scripts.sellout_generator import (
-    gerar_sellout,
-    plotar_grafico_sellout,
-    gerar_resumo_itens,
-    salvar_relatorio_completo,
-)
+#from scripts.sellout_generator import (
+   # gerar_sellout,
+    #plotar_grafico_sellout,
+   # gerar_resumo_itens,
+   # salvar_relatorio_completo,
+#)
 from scripts.db import salvar_sellout, buscar_sellout, buscar_resumo
 
 st.set_page_config(page_title="Sell Out Automator", layout="wide")
